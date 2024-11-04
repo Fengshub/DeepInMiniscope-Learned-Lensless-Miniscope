@@ -16,7 +16,7 @@ Output: the [**reconstructed**](https://drive.google.com/file/d/1rXcDQbROTnVweov
 
 ## 3D sample reconstructions
 [**Dataset**](https://drive.google.com/drive/folders/1Zejm5FODAm7GRUgAYJpx1vZBarTAVnNT?usp=drive_link) for 3D reconstruction test of in-vivo mouse brain video recording.<br /><br />
-Input: Time-series standard-derivation of difference-to-local-mean weighted raw video.<br />
+Input: Time-series standard-deviation of difference-to-local-mean weighted raw video.<br />
 Output: reconstructed 4-D volumetric video containing 3-dimensional distribution of neural activities.<br />
 [**Code**](https://github.com/Fengshub/DeepLeMiN_private/blob/main/3D%20reconstructions_mouse/3D%20mouse.py) for Multi-FOV ADMM-Net model to generate reconstruction results. The function of each script section is described at the beginning of each section.<br />
 [**Code**](https://github.com/Fengshub/DeepLeMiN_private/blob/main/3D%20reconstructions_mouse/3D%20mouse.m) to display the generated image and calculate temporal correlation.<br />
