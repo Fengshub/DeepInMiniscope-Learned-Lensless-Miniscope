@@ -50,12 +50,13 @@ end
 Yv2=Yv(:,101:600,260-249:260+250,:);
 Yv2m=Yv2(:,90:428,37:434,:);
 
-%% temporal correlation map
+%% temporal correlation map with nearest voxels
 Yv2m2=Yv2m;
 Yv2mte=zeros([size(Yv2,2),size(Yv2,3),size(Yv2,4)]);
+tof=10;
 for idxd=1:13
-    for idx1=11:size(Yv2m,2)-10 % reduced calculation area to increase speed
-        for idx2=11:size(Yv2m,3)-10
+    for idx1=1+tof:size(Yv2m,2)-tof % reduced calculation area to increase speed
+        for idx2=1+tof:size(Yv2m,3)-tof
             corrtmax=[];
             traceref=squeeze(Yv2m2(:,idx1,idx2,idxd));
             
@@ -103,7 +104,7 @@ temp=temp*255;
 imagesc(uint8(temp))
 daspect([1 1 1])
 axis off
-saveas(gcf, '../results/3D_mouse_topview.png')
+saveas(gcf, '../../results/3D_mouse_topview.png')
 
 %% 3D iterative clustering
 %% iterative thresholding
@@ -113,7 +114,7 @@ th2=15;
 recon_rec=recon_rec3./max(recon_rec3(:));
 CC = bwconncomp(recon_rec,26);
 recon_rec5=zeros(size(recon_rec));
-for th=0.02:0.02:0.5
+for th=0.02:0.02:0.5 % multi-thresholds to recognize cell clusters
     recon_rec=recon_rec3./max(recon_rec3(:));
     for idx=1:CC.NumObjects
         temp=CC.PixelIdxList{idx};
@@ -140,6 +141,7 @@ end
 recon_rec3=recon_rec5;
 th1=0.005;
 th2=0;
+th3=2e4;
 recon_rec=recon_rec3./max(recon_rec3(:));
 CC = bwconncomp(recon_rec,26);
 recon_rec5=zeros(size(recon_rec));
@@ -161,12 +163,11 @@ for th=0.5
         temp=CC.PixelIdxList{idx};
             recon_rec(temp)=recon_rec(temp)+rand(size(temp))*0.005;
             a=find(recon_rec==max(recon_rec(temp)));%a=a(1);
-            recon_rec4(a)=recon_rec3(a);%/(length(temp)/50).^0.3;
+            recon_rec4(a)=recon_rec3(a);
             recon_rec5(a)=recon_rec3(a);
     end
 end
-%% 
-recon_rec5(recon_rec5<2e4)=0; %Yv2mte_42
+recon_rec5(recon_rec5<th3)=0;
 
 %% calculate lateral and axial span of each clustered center (total 151 clusters)
 %%
@@ -214,7 +215,7 @@ ax.FontSize=20;
 title('lateral fwhm')
 xlabel('\mum')
 ylabel('number of clusters')
-saveas(gcf, '../results/3D_mouse_lateralhistogram.png')
+saveas(gcf, '../../results/3D_mouse_lateralhistogram.png')
 %%
 recon_rec5s=sum(recon_rec5,3);
 [cx,cy]=find(recon_rec5s~=0);
@@ -246,4 +247,4 @@ xlim([100 300])
 title('axial fwhm')
 xlabel('\mum')
 ylabel('number of clusters')
-saveas(gcf, '../results/3D_mouse_axialhistogram.png')
+saveas(gcf, '../../results/3D_mouse_axialhistogram.png')
