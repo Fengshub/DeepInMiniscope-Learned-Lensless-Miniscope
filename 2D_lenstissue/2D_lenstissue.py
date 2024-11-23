@@ -122,7 +122,7 @@ class Hadamard_x(Layer):
         # print(input_shape)
         return input_shape
 # %%
-reconMz5=keras.models.load_model('../../data/2D_lenstissue/reconM_0308_z5', custom_objects={'Hadamard_i': Hadamard_i,'Hadamard_x': Hadamard_x,'ssim':ssim})
+reconM=keras.models.load_model('../../data/2D_lenstissue/reconM_0308', custom_objects={'Hadamard_i': Hadamard_i,'Hadamard_x': Hadamard_x,'ssim':ssim})
 
 # %%
 from scipy.io import loadmat
@@ -130,8 +130,8 @@ import mat73
 datav1 = loadmat('../../data/2D_lenstissue/data_2d_lenstissue.mat')
 Xt=datav1['Xt']
 Xt=Xt.astype('float32')
-Yt=datav1['Yt']
-Yt=Yt.astype('float32')
+# Yt=datav1['Yt']
+# Yt=Yt.astype('float32')
 # %%
 # from scipy.io import loadmat
 # import mat73
@@ -139,15 +139,15 @@ Yt=Yt.astype('float32')
 # Yt=datav1['Yts']
 # Yt=Yt.astype('float32')
 # %%
-Y=np.zeros((15,180,180,108))
+Yt=np.zeros((15,180,180,108))
 # %%
 import scipy
 rcof=0
 vid=30
 rmin=rcof
-rmax=Y.shape[1]-rcof
+rmax=Yt.shape[1]-rcof
 cmin=rcof
-cmax=Y.shape[2]-rcof
+cmax=Yt.shape[2]-rcof
 pid=0
 temp=Xt[pid]
 # temp=np.rot90(np.rot90(temp))
@@ -156,10 +156,5 @@ generated_images=reconM.predict(temp)
 # generated_images=generated_images[0]
 plt.imshow(generated_images[0,rmin:rmax,cmin:cmax,vid],clim=(0,9e-1))
 # %%
-# reconM.evaluate(Xt[0:1],Yt[0:1])
-# %%
 from scipy.io import savemat
-# savemat('gen_lenstissue.mat', {"generated_images": generated_images})
-
-
-
+savemat('..\\..\\data\\2D_lenstissue\\gen_lenstissue_test.mat', {"generated_images": generated_images})
