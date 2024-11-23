@@ -1,4 +1,4 @@
-# DeepLeMiN: Learned Lensless Miniscope
+# DeepInMiniscope: Learned Integrated Miniscope
 Feng Tian, Ben Mattison, Weijian Yang "DeepLeMiN: Deep-learning-powered Physics-aware Lensless Miniscope"
 ### Clone this repository:
 ```
