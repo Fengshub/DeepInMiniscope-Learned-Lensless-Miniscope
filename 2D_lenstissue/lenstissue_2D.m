@@ -1,3 +1,7 @@
+%%
+clear
+clc
+close all
 %% calibrated miniscope frame coordinates
 cali_angle=0;
 cali_FOV_x=1376;
@@ -47,4 +51,4 @@ imagesc(Yvv)
 daspect([1 1 1])
 % save plots
 %imwrite(Yvv,'../../data/2D_lenstissue/2D_lenstissue_plot.jpg')
-saveas(gcf, '../results/2D_lenstissue_reconstruction.png')
+saveas(gcf, '../../results/2D_lenstissue_reconstruction.png')
