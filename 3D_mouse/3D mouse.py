@@ -285,7 +285,8 @@ generated_images_fu=(generated_images_f*255).astype('uint8')
 # %% save reconstructed 3D video
 from scipy.io import savemat
 # savemat('weights73icp2.mat', {"weights": weights})
-# savemat('gen_img_recd_video0003 24-04-04 18-31-11_abetterrecordlong_03560_1_290_v4.mat', {"generated_images_fu": generated_images_fu})
+savemat('..\\..\\data\\3D_mouse\\gen_img_recd_video0003 24-04-04 18-31-11_abetterrecordlong_03560_1_290_v4_test.mat', {"generated_images_fu": generated_images_fu})
+
 
 
 
