@@ -1,0 +1,133 @@
+"""
+=========================================================
+Random Mask Generator for FreeCAD
+=========================================================
+
+Description:
+------------
+This script generates a collection of random polygons and 
+text shapes (A–Z) within a specified field of view (FOV),
+compounds them into a single object, and subtracts them
+from a base rectangle to create a negative mask.
+
+Intended Use:
+-------------
+This code was prepared as part of the experiments in:
+    DeepInMiniscope: Deep learning–powered physics-informed integrated miniscope (https://www.science.org/doi/10.1126/sciadv.adr6687)
+and is meant for generating custom random masks for simulation, fabrication, or figure preparation.
+
+Dependencies:
+-------------
+- FreeCAD (tested on FreeCAD 1.0.0)
+- NumPy (for random number generation)
+
+Inputs:
+-------
+- FOV size (FOVmaxx, FOVmaxy)
+- Polygon radius range (radimin, radimax)
+- Number of polygons and text strings
+- Font path for text shapes (edit to match your system)
+
+Outputs:
+--------
+- FreeCAD document (.FCStd) with cut mask
+- Exported DXF mask file
+
+How to run:
+-----------
+1. Open FreeCAD.
+2. Switch to the Python console or run as a macro.
+3. Make sure the font path is valid for your system.
+4. Run the script; outputs will be saved to the specified path.
+
+Notes:
+------
+- Draft.make_shapestring produces wires; we convert to faces
+  for robust boolean cuts.
+- For very large numbers of polygons/letters, performance 
+  may be slow.
+- Use "Part::Compound" for fast grouping; use "Part::MultiFuse" 
+  when true union is required.
+
+Author:
+-------
+Feng Tian, University of California Daivs
+License: MIT
+"""
+import FreeCAD as App
+import Draft, Part
+import numpy as np
+
+doc = App.newDocument()
+
+FOVmaxx, FOVmaxy = 5.0, 5.0
+zaxis = App.Vector(0,0,1)
+
+radimin, radimax = 0.001, 0.011
+polymin, polymax = 3, 10
+numpoly = int(1*FOVmaxx*FOVmaxy)
+
+font1 = "C:/Windows/Fonts/arial.ttf" # "arial.ttf"
+strlist = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+strsizmax, strsizmin = 0.14, 0.05
+numstr = int(200*FOVmaxx*FOVmaxy)
+
+faces = []
+
+# Polygons as FACES (important: face=True)
+for _ in range(numpoly):
+    x = float(np.random.uniform(0, FOVmaxx))
+    y = float(np.random.uniform(0, FOVmaxy))
+    ang = float(np.random.uniform(0, 360))
+    r  = float(np.random.uniform(radimin, radimax))
+    n  = int(np.random.randint(polymin, polymax))
+
+    place = App.Placement(App.Vector(x,y,0), App.Rotation(zaxis, ang))
+    poly  = Draft.make_polygon(n, radius=r, placement=place, face=True)
+    doc.recompute()
+    # Convert to a plain Part face (boolean-friendly)
+    f = doc.addObject("Part::Feature","PolyFace")
+    f.Shape = poly.Shape  # polygon already provides a Face when face=True
+    faces.append(f)
+
+# Text as FACES (ShapeString -> closed wires -> face-with-holes)
+for _ in range(numstr):
+    ch  = strlist[np.random.randint(len(strlist))]
+    siz = float(np.random.uniform(strsizmin, strsizmax))
+    x   = float(np.random.uniform(0, FOVmaxx))
+    y   = float(np.random.uniform(0, FOVmaxy))
+    ang = float(np.random.uniform(0, 360))
+    place = App.Placement(App.Vector(x,y,0), App.Rotation(zaxis, ang))
+
+    ss = Draft.make_shapestring(String=ch, FontFile=font1, Size=siz)
+    ss.Placement = place
+    doc.recompute()
+
+    # Build a single face from all wires (keeps holes like 'A','B','O')
+    ff = Part.Face(ss.Shape.Wires)   # Part.makeFace also works
+    ff_obj = doc.addObject("Part::Feature","TextFace")
+    ff_obj.Shape = ff
+    faces.append(ff_obj)
+
+doc.recompute()
+
+# Union of all faces MUST be MultiFuse (not Compound)
+fuse = doc.addObject("Part::MultiFuse","AllFeaturesFuse")
+fuse.Shapes = faces
+doc.recompute()
+
+# Base rectangle face to cut FROM
+rect = Draft.makeRectangle(length=FOVmaxx, height=FOVmaxy, placement=App.Placement(), face=True)
+doc.recompute()
+
+# Boolean cut (2D faces, coplanar at z=0)
+cut = doc.addObject("Part::Cut","MaskCut2D")
+cut.Base = rect
+cut.Tool = fuse
+doc.recompute()
+
+# Export the result as DXF (2D)
+import importDXF
+importDXF.export([cut], "targetmask_sample.dxf")
+
+App.getDocument(doc.Name).saveAs("targetmask_sample.FCStd")
